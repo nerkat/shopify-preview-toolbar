@@ -26,19 +26,29 @@ if (isShopify) {
           button = document.createElement('a');
           button.innerHTML = 'Copy URL';
           button.style = `
-        position: fixed;
-        bottom: 10px;
-        font-size: 10px;
-        right: 367px;
-        z-index: 2147483647;
-        color: black;
-        padding: 10px;
-        border: none;
-        cursor: pointer;
+          position: fixed;
+          bottom: 11px;
+          font-weight: bold;
+          right: 358px;
+          z-index: 2147483647;
+          border: none;
+          cursor: pointer;
+          text-align: center;
+          font-size: 14px;
+          border-radius: 4px;
+          padding: 6px 10px;
+          color: rgb(0 128 96);
       `;
+
+          let content = `
+      <span>Theme Name: ${themeName}</span><br>
+      <span>Theme Preview Link: <a href='${previewLink}'>${previewLink}</a></span>
+      `;
+
           button.onclick = () => {
-            copyLinkToClipboard(`<a href='${previewLink}'>${themeName}</a>`);
+            copyLinkToClipboard(content);
           };
+
           document.body.appendChild(button);
         });
     }
@@ -57,8 +67,8 @@ function copyLinkToClipboard(content) {
   document.execCommand('copy');
   document.removeEventListener('copy', copyListener);
 
-  // Change the button text to "Copied"
-  button.innerHTML = 'Copied';
+  // Change the button text to "Copied!"
+  button.innerHTML = 'Copied!';
 
   // Change the button text back to "Copy URL" after 2 seconds
   setTimeout(() => {
