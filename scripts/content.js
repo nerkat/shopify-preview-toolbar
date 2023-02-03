@@ -42,7 +42,7 @@ if (isShopify) {
 
           let content = `
       <span>Theme Name: ${themeName}</span><br>
-      <span>Theme Preview Link: <a href='${previewLink}'>${previewLink}</a></span>
+      <span>Preview Link: <a href='${previewLink}'>${previewLink}</a></span>
       `;
 
           button.onclick = () => {
