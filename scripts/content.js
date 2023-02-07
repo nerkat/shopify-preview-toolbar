@@ -27,9 +27,9 @@ if (isShopify) {
           button.innerHTML = 'Copy URL';
           button.style = `
           position: fixed;
-          bottom: 11px;
+          bottom: 5px;
           font-weight: bold;
-          right: 358px;
+          left: 213px;
           z-index: 2147483647;
           border: none;
           cursor: pointer;
@@ -37,7 +37,7 @@ if (isShopify) {
           font-size: 14px;
           border-radius: 4px;
           padding: 6px 10px;
-          color: rgb(0 128 96);
+          color: rgb(0, 128, 96);
       `;
 
           let content = `
