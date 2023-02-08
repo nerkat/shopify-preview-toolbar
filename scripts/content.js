@@ -110,8 +110,8 @@ function urlButton() {
 };
 
 // if 'urlButton' extension settings is set to true on 'chrome.storage', add a button to the page
- // Read it using the storage API
- chrome.storage.sync.get(['urlButton'], function(items) {
+// Read it using the storage API
+chrome.storage.sync.get(['urlButton'], function (items) {
   if (items.urlButton) {
     urlButton();
   }
