@@ -21,7 +21,5 @@
   "action": {
     "default_popup": "settings.html"
   },
-  "permissions": [
-    "windows"
-  ]
+  "permissions": ["storage", "unlimitedStorage"]
 }
