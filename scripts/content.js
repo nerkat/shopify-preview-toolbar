@@ -6,6 +6,27 @@
 // Shopify URL Button
 // Add a button to the page to copy the preview link
 function urlButton() {
+
+  // Get the HTML of the document as a string
+  var html = document.documentElement.outerHTML;
+
+  // Use a regular expression to find the themeId in the HTML
+  // This regular expression looks for a string that starts with "Shopify.theme = "
+  // and captures the part that starts with "id": and ends with the next comma
+  var idMatch = html.match(/Shopify\.theme = \{"name":"[^"]*","id":(\d+)/);
+  // Use a regular expression to find the shop name in the HTML
+  // This regular expression looks for a string that starts with "Shopify.shop = "
+  // and captures the part enclosed in the double quotes
+  var storeUrlMatch = html.match(/Shopify\.shop = "([^"]*)";/);
+  var themeId;
+  var storeUrl;
+
+  if (idMatch) {
+    // If a match was found, the themeId is in the first capture group
+    themeId = idMatch[1];
+    storeUrl = storeUrlMatch[1];
+  }
+
   let button;
   // Check if the current page is a Shopify page
   const isShopify = document.querySelector('meta[name="shopify-digital-wallet"]');
@@ -24,7 +45,7 @@ function urlButton() {
           .then(data => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(data, 'text/html');
-            const previewLink = htmlDoc.querySelector('#share_theme_url').value;
+            const previewLink = `https://${storeUrl}?_fd=0&preview_theme_id=${themeId}`;
             const themeName = htmlDoc.querySelector('.ui-type-container.ui-type-container--spacing-extra-tight p strong').innerHTML;
 
             // Create a "Copy URL" button and add it to the page
@@ -48,9 +69,8 @@ function urlButton() {
       `;
 
             let content = `
-      <span>Theme Name: ${themeName}</span><br>
-      <span>Preview Link: <a href='${previewLink}'>${previewLink}</a></span>
-      `;
+            <a href='${previewLink}'>${themeName}</a>
+            `;
 
             button.onclick = () => {
               copyLinkToClipboard(content);
@@ -114,5 +134,6 @@ function urlButton() {
 chrome.storage.sync.get(['urlButton'], function (items) {
   if (items.urlButton) {
     urlButton();
+
   }
 });

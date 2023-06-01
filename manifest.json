@@ -15,7 +15,8 @@
       ],
       "matches": [
         "https://*/*"
-      ]
+      ],
+      "all_frames": true
     }
   ],
   "action": {
