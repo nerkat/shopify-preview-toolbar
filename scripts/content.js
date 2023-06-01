@@ -1,4 +1,6 @@
 // Content Script for Chrome Extension to copy preview link of Shopify theme
+
+
 // Documentation: https://developer.chrome.com/extensions/content_scripts
 
 
@@ -33,104 +35,113 @@ function urlButton() {
     storeName = storeNameMatch[1];
   }
 
-  let button;
-  // Check if the current page is a Shopify page
-  const isShopify = document.querySelector('meta[name="shopify-digital-wallet"]');
-  if (isShopify) {
+  // Get the preview bar iframe
+  const previewBarIframe = document.querySelector('#preview-bar-iframe');
 
-    // Wait for the preview bar to load
-    setTimeout(() => {
-      const previewBarIframe = document.querySelector('#preview-bar-iframe');
-      if (previewBarIframe) {
+  // Get the preview link
+  const previewLink = `https://${storeUrl}?_fd=0&preview_theme_id=${themeId}`;
 
+  // Get the iframe document
+  let iframeDocument = previewBarIframe.contentDocument || previewBarIframe.contentWindow.document;
 
-        const previewLink = `https://${storeUrl}?_fd=0&preview_theme_id=${themeId}`;
+  // Create the button
+  let mobileButton = iframeDocument.createElement('li');
+  mobileButton.classList.add('ui-action-list__item');
+  mobileButton.innerHTML = `
+          <button class="ui-action-list-action" type="button" name="button">
+            <span class="ui-action-list-action__text">
+              Copy URL
+            </span>
+          </button>
+        `;
 
-        // Create a "Copy URL" button and add it to the page
-        button = document.createElement('a');
-        button.innerHTML = 'Copy URL';
-        button.id = 'copy-url';
-        button.style = `
-          position: fixed;
-          bottom: 12px;
-          font-weight: bold;
-          right: 362px;
-          z-index: 2147483647;
-          cursor: pointer;
-          text-align: center;
-          font-size: 13px;
-          border-radius: 4px;
-          padding: 6px 18px;
-          color: rgb(0, 128, 96);
-          border: 1px solid #BABFC3;
-          background: white;
-      `;
+  // Create the button
+  let button = iframeDocument.createElement('li');
+  button.classList.add('ui-button-group__item');
 
-        let content = `
-            <a href='${previewLink}'>${storeName}</a>
-            `;
+  button.innerHTML = `
+          <button class="ui-button admin-bar__button--is-hidden-on-mobile" type="button" name="button">
+            Copy URL
+          </button>
+        `;
 
-        button.onclick = () => {
-          copyLinkToClipboard(content);
-        };
+  // Create the content to copy to the clipboard
+  let content = `
+        <a href='${previewLink}'>${storeName}</a>
+        `;
 
-        document.body.appendChild(button);
-
-        const css = `
-                    @media (max-width: 784px) {
-                      #copy-url {
-                        bottom: 27px !important;
-                        right: 145px !important;
-                      }
-                    }
-                    `;
-        const style = document.createElement('style');
-        style.type = 'text/css';
-        style.appendChild(document.createTextNode(css));
-        document.head.appendChild(style);
-
-        // watch for changes in the preview bar iframe 'style'
-        // if the preview bar is closed, remove the button
-        const observer = new MutationObserver(() => {
-          if (previewBarIframe.style.display === 'none') {
-            button.remove();
-          }
-        });
-        observer.observe(previewBarIframe, {
-          attributes: true,
-          attributeFilter: ['style']
-        });
-      }
-    }, 500);
-
-    // Copy the given content to the clipboard
-    function copyLinkToClipboard(content) {
-      const copyListener = event => {
-        event.clipboardData.setData('text/plain', content);
-        event.clipboardData.setData('text/html', content);
-        event.preventDefault();
-      };
-
-      document.addEventListener('copy', copyListener);
-      document.execCommand('copy');
-      document.removeEventListener('copy', copyListener);
-
-      // Change the button text to "Copied!"
-      button.innerHTML = 'Copied!';
-
-      // Change the button text back to "Copy URL" after 2 seconds
-      setTimeout(() => {
-        button.innerHTML = 'Copy URL';
-      }, 2000);
-    }
+  // Add an event listener to the button
+  button.onclick = () => {
+    copyLinkToClipboard(button, content);
   };
+
+  // Add an event listener to the button
+  mobileButton.onclick = () => {
+    copyLinkToClipboard(mobileButton, content);
+  };
+
+  // Add the button to the page
+  let adminButtons = iframeDocument.querySelector('.admin-bar__button-group');
+  let mobileAdminButtons = iframeDocument.querySelectorAll('.ui-action-list')[0]
+
+  adminButtons.prepend(button);
+  mobileAdminButtons.prepend(mobileButton);
+
+
+  // Copy the given content to the clipboard
+  function copyLinkToClipboard(button, content) {
+    const copyListener = event => {
+      event.clipboardData.setData('text/plain', content);
+      event.clipboardData.setData('text/html', content);
+      event.preventDefault();
+    };
+
+    document.addEventListener('copy', copyListener);
+    document.execCommand('copy');
+    document.removeEventListener('copy', copyListener);
+
+    // Change the button text to "Copied!"
+    button.querySelector('button').innerHTML = 'Copied!';
+
+    // Change the button text back to "Copy URL" after 2 seconds
+    setTimeout(() => {
+      button.querySelector('button').innerHTML = 'Copy URL';
+    }, 2000);
+  }
 }
 
 // if 'urlButton' extension settings is set to true on 'chrome.storage', add a button to the page
 // Read it using the storage API
 chrome.storage.sync.get(['urlButton'], function (items) {
   if (items.urlButton) {
-    urlButton();
 
+    // Check if the current page is a Shopify page
+    const isShopify = document.querySelector('meta[name="shopify-digital-wallet"]');
+    if (isShopify) {
+
+      // The element you're waiting for
+      var elementSelector = '#preview-bar-iframe';
+
+      // Create a new Mutation Observer instance
+      var observer = new MutationObserver(function (mutationsList, observer) {
+        // Loop over the mutations that just occured
+        for (let mutation of mutationsList) {
+          // If the addedNodes property has one or more nodes
+          if (mutation.addedNodes.length) {
+            var element = document.querySelector(elementSelector);
+            if (element) {
+              // Element is loaded, you can now run your script
+              urlButton();
+
+              // Once the element has loaded, you don't need the observer anymore
+              observer.disconnect();
+            }
+          }
+        }
+      });
+
+      // Start observing the document with the configured parameters
+      observer.observe(document, { childList: true, subtree: true });
+    }
   }
 });
