@@ -18,13 +18,19 @@ function urlButton() {
   // This regular expression looks for a string that starts with "Shopify.shop = "
   // and captures the part enclosed in the double quotes
   var storeUrlMatch = html.match(/Shopify\.shop = "([^"]*)";/);
+  // Use a regular expression to find the theme name in the HTML
+  // This regular expression looks for a string that starts with "Shopify.theme = "
+  // and captures the part that starts with "name": and ends with the next comma
+  var storeNameMatch = html.match(/Shopify\.theme = \{"name":"([^"]*)","id":\d+/);
   var themeId;
   var storeUrl;
+  var storeName;
 
   if (idMatch) {
     // If a match was found, the themeId is in the first capture group
     themeId = idMatch[1];
     storeUrl = storeUrlMatch[1];
+    storeName = storeNameMatch[1];
   }
 
   let button;
@@ -37,22 +43,14 @@ function urlButton() {
       const previewBarIframe = document.querySelector('#preview-bar-iframe');
       if (previewBarIframe) {
 
-        const previewUrl = previewBarIframe.src;
 
-        // Fetch the preview bar HTML and extract the preview link and theme name
-        fetch(previewUrl)
-          .then(response => response.text())
-          .then(data => {
-            const parser = new DOMParser();
-            const htmlDoc = parser.parseFromString(data, 'text/html');
-            const previewLink = `https://${storeUrl}?_fd=0&preview_theme_id=${themeId}`;
-            const themeName = htmlDoc.querySelector('.ui-type-container.ui-type-container--spacing-extra-tight p strong').innerHTML;
+        const previewLink = `https://${storeUrl}?_fd=0&preview_theme_id=${themeId}`;
 
-            // Create a "Copy URL" button and add it to the page
-            button = document.createElement('a');
-            button.innerHTML = 'Copy URL';
-            button.id = 'copy-url';
-            button.style = `
+        // Create a "Copy URL" button and add it to the page
+        button = document.createElement('a');
+        button.innerHTML = 'Copy URL';
+        button.id = 'copy-url';
+        button.style = `
           position: fixed;
           bottom: 12px;
           font-weight: bold;
@@ -68,17 +66,17 @@ function urlButton() {
           background: white;
       `;
 
-            let content = `
-            <a href='${previewLink}'>${themeName}</a>
+        let content = `
+            <a href='${previewLink}'>${storeName}</a>
             `;
 
-            button.onclick = () => {
-              copyLinkToClipboard(content);
-            };
+        button.onclick = () => {
+          copyLinkToClipboard(content);
+        };
 
-            document.body.appendChild(button);
+        document.body.appendChild(button);
 
-            const css = `
+        const css = `
                     @media (max-width: 784px) {
                       #copy-url {
                         bottom: 27px !important;
@@ -86,12 +84,11 @@ function urlButton() {
                       }
                     }
                     `;
-            const style = document.createElement('style');
-            style.type = 'text/css';
-            style.appendChild(document.createTextNode(css));
-            document.head.appendChild(style);
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
 
-          });
         // watch for changes in the preview bar iframe 'style'
         // if the preview bar is closed, remove the button
         const observer = new MutationObserver(() => {
@@ -105,29 +102,29 @@ function urlButton() {
         });
       }
     }, 500);
-  }
 
-  // Copy the given content to the clipboard
-  function copyLinkToClipboard(content) {
-    const copyListener = event => {
-      event.clipboardData.setData('text/plain', content);
-      event.clipboardData.setData('text/html', content);
-      event.preventDefault();
-    };
+    // Copy the given content to the clipboard
+    function copyLinkToClipboard(content) {
+      const copyListener = event => {
+        event.clipboardData.setData('text/plain', content);
+        event.clipboardData.setData('text/html', content);
+        event.preventDefault();
+      };
 
-    document.addEventListener('copy', copyListener);
-    document.execCommand('copy');
-    document.removeEventListener('copy', copyListener);
+      document.addEventListener('copy', copyListener);
+      document.execCommand('copy');
+      document.removeEventListener('copy', copyListener);
 
-    // Change the button text to "Copied!"
-    button.innerHTML = 'Copied!';
+      // Change the button text to "Copied!"
+      button.innerHTML = 'Copied!';
 
-    // Change the button text back to "Copy URL" after 2 seconds
-    setTimeout(() => {
-      button.innerHTML = 'Copy URL';
-    }, 2000);
-  }
-};
+      // Change the button text back to "Copy URL" after 2 seconds
+      setTimeout(() => {
+        button.innerHTML = 'Copy URL';
+      }, 2000);
+    }
+  };
+}
 
 // if 'urlButton' extension settings is set to true on 'chrome.storage', add a button to the page
 // Read it using the storage API
