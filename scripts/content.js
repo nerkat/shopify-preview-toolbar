@@ -34,6 +34,10 @@ function urlButton() {
     storeUrl = storeUrlMatch[1];
     storeName = storeNameMatch[1];
   }
+  else {
+    // If no match was found for the themeId, stop the script
+    return;
+  }
 
   // Get the preview bar iframe
   const previewBarIframe = document.querySelector('#preview-bar-iframe');
