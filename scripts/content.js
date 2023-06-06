@@ -86,10 +86,12 @@ function urlButton() {
 
   // Add the button to the page
   let adminButtons = iframeDocument.querySelector('.admin-bar__button-group');
-  let mobileAdminButtons = iframeDocument.querySelectorAll('.ui-action-list')[0]
-
-  adminButtons.prepend(button);
-  mobileAdminButtons.prepend(mobileButton);
+  let mobileAdminButtons = iframeDocument.querySelectorAll('.ui-action-list')[0];
+  // Check if the admin bar is visible
+  if (adminButtons && mobileAdminButtons) {
+    adminButtons.prepend(button);
+    mobileAdminButtons.prepend(mobileButton);
+  }
 
 
   // Copy the given content to the clipboard
